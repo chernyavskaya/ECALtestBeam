@@ -46,8 +46,8 @@ public:
     double NegLogLikelihood(const double* par=NULL);
     int MinimizeNLL();
 
-    double m_Cm_,m_a1_,m_a2_,m_b1_,m_b2_,m_alpha_,m_beta_,m_gamma_;
-    double m_Cm_e_,m_a1_e_,m_a2_e_,m_b1_e_,m_b2_e_,m_alpha_e_,m_beta_e_,m_gamma_e_;
+    double m_Cm_,m_a1_,m_a2_,m_b1_,m_b2_,m_alpha_,m_beta_,m_gamma_,m_s1_,m_s2_;
+    double m_Cm_e_,m_a1_e_,m_a2_e_,m_b1_e_,m_b2_e_,m_alpha_e_,m_beta_e_,m_gamma_e_,m_s1_e_,m_s2_e_;
     vector<double>  m_nll_;
  
 };
