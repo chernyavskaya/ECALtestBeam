@@ -25,6 +25,7 @@ using namespace std;
 class LLminimizer
 {
 private:
+    int minuit_print_level_;
     vector<double>  m_mcp1_ampl_;
     vector<double>  m_mcp2_ampl_;
     vector<double>  m_dt_ecal_mcp1_;
@@ -38,7 +39,7 @@ private:
 public:
   //  LLminimizer(vector<double> mcp1_ampl,vector<double> mcp2_ampl,vector<double> dt_ecal_mcp1,vector<double> dt_ecal_mcp2,vector<double> dt_mcp2_mcp1,  TString crystal, TString energy);
    // void SetData(vector<double> mcp1_ampl,vector<double> mcp2_ampl,vector<double> dt_ecal_mcp1,vector<double> dt_ecal_mcp2,vector<double> dt_mcp2_mcp1);
-    LLminimizer(int events_num, double *mcp1_ampl,double *mcp2_ampl,double *dt_ecal_mcp1,double *dt_ecal_mcp2,double *dt_mcp2_mcp1, TString crystal, TString energy);
+    LLminimizer(int events_num, double *mcp1_ampl,double *mcp2_ampl,double *dt_ecal_mcp1,double *dt_ecal_mcp2,double *dt_mcp2_mcp1, TString crystal, TString energy, int print_level=0);
     void SetData(int events_num, double *mcp1_ampl,double *mcp2_ampl,double *dt_ecal_mcp1,double *dt_ecal_mcp2,double *dt_mcp2_mcp1);
  
     void SetCrystal(TString crystal);
