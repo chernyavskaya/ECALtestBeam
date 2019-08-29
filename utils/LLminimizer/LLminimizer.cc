@@ -179,7 +179,7 @@ double LLminimizer::NegLogLikelihoodSimultaneous(const double* par)
             alpha = par[par_num+1];
             beta = par[par_num+2];        
         }   
-        
+        /*
         par_num = 24;
         if (m_energy_[iSample]==100) par_num=24;
         if (m_energy_[iSample]==150) par_num=28;       
@@ -189,9 +189,21 @@ double LLminimizer::NegLogLikelihoodSimultaneous(const double* par)
         if (m_energy_[iSample]!=50){
             alpha_cb1 = par[par_num];
             alpha_cb2 = par[par_num+1];
-            n_cb1 = par[par_num+2];
-            n_cb2 = par[par_num+3];        
-
+        //    n_cb1 = par[par_num+2];
+         //  n_cb2 = par[par_num+3];        
+        }          
+        */
+         par_num = 24;
+        if (m_energy_[iSample]==100) par_num=24;
+        if (m_energy_[iSample]==150) par_num=26;       
+        if (m_energy_[iSample]==200) par_num=28;
+        if (m_energy_[iSample]==250) par_num=30;
+           
+        if (m_energy_[iSample]!=50){
+            alpha_cb1 = par[par_num];
+            alpha_cb2 = par[par_num+1];
+        //    n_cb1 = par[par_num+2];
+         //  n_cb2 = par[par_num+3];        
         }          
         
       
@@ -224,7 +236,7 @@ double LLminimizer::NegLogLikelihoodSimultaneous(const double* par)
 int LLminimizer::MinimizeNLLSimultaneous()
 {
 
-            ROOT::Math::Functor chi2(this, &LLminimizer::NegLogLikelihoodSimultaneous, 40);  //24
+            ROOT::Math::Functor chi2(this, &LLminimizer::NegLogLikelihoodSimultaneous, 32);  //24  //40
             ROOT::Math::Minimizer* minimizer = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
             minimizer->SetMaxFunctionCalls(100000);
             minimizer->SetMaxIterations(1000);
@@ -259,23 +271,23 @@ int LLminimizer::MinimizeNLLSimultaneous()
     
             minimizer->SetLimitedVariable(24, "alpha_cb1_100",3,1.,0,10 );
             minimizer->SetLimitedVariable(25, "alpha_cb2_100",3,1.,0,10 );
-            minimizer->SetLimitedVariable(26, "n_cb1_100",10,0.1,1.,100 );
-            minimizer->SetLimitedVariable(27, "n_cb2_100",10,0.1,1.,100 );
+         //   minimizer->SetLimitedVariable(26, "n_cb1_100",10,0.1,1.,100 );
+        //    minimizer->SetLimitedVariable(27, "n_cb2_100",10,0.1,1.,100 );
     
             minimizer->SetLimitedVariable(28, "alpha_cb1_150",3,1.,0,10 );
             minimizer->SetLimitedVariable(29, "alpha_cb2_150",3,1.,0,10 );
-            minimizer->SetLimitedVariable(30, "n_cb1_150",10,0.1,1.,100 );
-            minimizer->SetLimitedVariable(31, "n_cb2_150",10,0.1,1.,100 );
+          //  minimizer->SetLimitedVariable(30, "n_cb1_150",10,0.1,1.,100 );
+          //  minimizer->SetLimitedVariable(31, "n_cb2_150",10,0.1,1.,100 );
     
             minimizer->SetLimitedVariable(32, "alpha_cb1_200",3,1.,0,10 );
             minimizer->SetLimitedVariable(33, "alpha_cb2_200",3,1.,0,10 );
-            minimizer->SetLimitedVariable(34, "n_cb1_200",10,0.1,1.,100 );
-            minimizer->SetLimitedVariable(35, "n_cb2_200",10,0.1,1.,100 );
+       //     minimizer->SetLimitedVariable(34, "n_cb1_200",10,0.1,1.,100 );
+         //   minimizer->SetLimitedVariable(35, "n_cb2_200",10,0.1,1.,100 );
     
-            minimizer->SetLimitedVariable(36, "alpha_cb1_200",3,1.,0,10 );
-            minimizer->SetLimitedVariable(37, "alpha_cb2_200",3,1.,0,10 );
-            minimizer->SetLimitedVariable(38, "n_cb1_200",10,0.1,1.,100 );
-            minimizer->SetLimitedVariable(39, "n_cb2_200",10,0.1,1.,100 );
+            minimizer->SetLimitedVariable(36, "alpha_cb1_250",3,1.,0,10 );
+            minimizer->SetLimitedVariable(37, "alpha_cb2_250",3,1.,0,10 );
+         //   minimizer->SetLimitedVariable(38, "n_cb1_250",10,0.1,1.,100 );
+         //   minimizer->SetLimitedVariable(39, "n_cb2_250",10,0.1,1.,100 );
     
             //---fit
             minimizer->Minimize();
@@ -314,8 +326,25 @@ int LLminimizer::MinimizeNLLSimultaneous()
             m_beta_e_.push_back(minimizer->Errors()[14]);
             m_beta_e_.push_back(minimizer->Errors()[17]);
             m_beta_e_.push_back(minimizer->Errors()[20]);
-            m_beta_e_.push_back(minimizer->Errors()[23]);    
+            m_beta_e_.push_back(minimizer->Errors()[23]);   
     
+            m_alpha_cb1_.push_back(minimizer->X()[8]);
+            m_alpha_cb1_.push_back(minimizer->X()[24]);
+            m_alpha_cb1_.push_back(minimizer->X()[26]);
+            m_alpha_cb1_.push_back(minimizer->X()[28]);
+            m_alpha_cb1_.push_back(minimizer->X()[30]);
+
+            m_alpha_cb2_.push_back(minimizer->X()[9]);
+            m_alpha_cb2_.push_back(minimizer->X()[25]);
+            m_alpha_cb2_.push_back(minimizer->X()[27]);
+            m_alpha_cb2_.push_back(minimizer->X()[29]);
+            m_alpha_cb2_.push_back(minimizer->X()[31]);
+    
+            m_n_cb1_.push_back(minimizer->X()[10]);
+            m_n_cb2_.push_back(minimizer->X()[11]);
+
+
+    /*
             m_alpha_cb1_.push_back(minimizer->X()[8]);
             m_alpha_cb1_.push_back(minimizer->X()[24]);
             m_alpha_cb1_.push_back(minimizer->X()[28]);
@@ -327,10 +356,6 @@ int LLminimizer::MinimizeNLLSimultaneous()
             m_alpha_cb2_.push_back(minimizer->X()[29]);
             m_alpha_cb2_.push_back(minimizer->X()[33]);
             m_alpha_cb2_.push_back(minimizer->X()[37]);
-    
-    
-            m_alpha_cb1_e_.push_back(minimizer->Errors()[8]);
-            m_alpha_cb2_e_.push_back(minimizer->Errors()[9]);    
 
             m_n_cb1_.push_back(minimizer->X()[10]);
             m_n_cb1_.push_back(minimizer->X()[26]);
@@ -343,6 +368,10 @@ int LLminimizer::MinimizeNLLSimultaneous()
             m_n_cb2_.push_back(minimizer->X()[31]);
             m_n_cb2_.push_back(minimizer->X()[35]);
             m_n_cb2_.push_back(minimizer->X()[39]);
+            */
+    
+            m_alpha_cb1_e_.push_back(minimizer->Errors()[8]);
+            m_alpha_cb2_e_.push_back(minimizer->Errors()[9]);     
     
             m_n_cb1_e_.push_back(minimizer->Errors()[10]);
             m_n_cb2_e_.push_back(minimizer->Errors()[11]);  
