@@ -1,5 +1,5 @@
 import ROOT
-from ROOT import RooRealVar,RooCBShape,RooDataHist,RooArgList,RooFit
+from ROOT import RooRealVar,RooCBShape,RooDataHist,RooArgList,RooFit,RooGaussian
 from ROOT import gROOT
 import csv
 import json
@@ -10,6 +10,7 @@ gROOT.LoadMacro('utils/My_double_CB/My_double_CB.cxx')
 class CBfunction:
     
     doubleSidedCB = False
+    gaussian = False
     
     nbins = 600
     xmin = 0
@@ -61,6 +62,18 @@ class CBfunction:
         self.peak_position = self.hist.GetXaxis().GetBinCenter(self.hist.GetMaximumBin())
         self.ymax_value = self.hist.GetMaximum()
         
+    def prepare_histogram_time(self):
+        self.set_selection()
+        self.hist = ROOT.TH1F("ampl_%s_%s"%(self.crystal,self.energy),"ampl_%s_%s"%(self.crystal,self.energy),self.nbins,self.xmin,self.xmax)  
+        self.data.Draw("((fit_time[%s]-fit_time[MCP2]+fit_time[VFE_CLK])-int((fit_time[%s]-fit_time[MCP2]+fit_time[VFE_CLK])/6.238)*6.238)>>ampl_%s_%s"%(self.crystal,self.crystal,self.crystal,self.energy),self.selection,"goff")
+        self.peak_position = self.hist.GetXaxis().GetBinCenter(self.hist.GetMaximumBin())
+        self.ymax_value = self.hist.GetMaximum()        
+
+    def plot_histogram_time(self):
+        self.hist.Draw("HISTsame")        
+          
+        
+        
     def CBintialization(self):
         round_energy = round(float(self.energy),-1)
         if round_energy ==240 : round_energy = 250
@@ -68,11 +81,22 @@ class CBfunction:
         self.x = RooRealVar("signal_%s_%dGeV"%(self.crystal,round_energy),"signal_%s_%dGeV"%(self.crystal,round_energy),max(0.,self.peak_position*(1-self.xaxis_scale)),self.peak_position*(1+self.xaxis_scale))
         self.roohist = RooDataHist("roohist_fit_%s_%s"%(self.crystal,self.energy),"roohist_fit_%s_%s"%(self.crystal,self.energy),RooArgList(self.x),self.hist)
         self.m = RooRealVar("mean_%s_%s"%(self.crystal,self.energy),"mean_%s_%s"%(self.crystal,self.energy),self.peak_position,max(0.,self.peak_position*(1-self.xaxis_scale)),self.peak_position*(1+self.xaxis_scale))
-        self.s = RooRealVar("sigma_%s_%s"%(self.crystal,self.energy),"sigma_%s_%s"%(self.crystal,self.energy),self.s_initial,10,500)
+        self.s = RooRealVar("sigma_%s_%s"%(self.crystal,self.energy),"sigma_%s_%s"%(self.crystal,self.energy),self.s_initial,0.001,1.) #500.
         self.a = RooRealVar("alpha_%s_%s"%(self.crystal,self.energy),"alpha_%s_%s"%(self.crystal,self.energy),self.a_initial,-10.,10)
         self.n = RooRealVar("exp_%s_%s"%(self.crystal,self.energy),"exp_%s_%s"%(self.crystal,self.energy),self.n_initial,0.,30)
         self.sig = RooCBShape("signal_%s_%s"%(self.crystal,self.energy),"signal_%s_%s"%(self.crystal,self.energy),self.x,self.m,self.s,self.a,self.n)
         
+    def Gausintialization(self):
+        round_energy = round(float(self.energy),-1)
+        if round_energy ==240 : round_energy = 250
+                
+        self.x = RooRealVar("signal_%s_%dGeV"%(self.crystal,round_energy),"signal_%s_%dGeV"%(self.crystal,round_energy),max(0.,self.peak_position*(1-self.xaxis_scale)),self.peak_position*(1+self.xaxis_scale))
+        self.roohist = RooDataHist("roohist_fit_%s_%s"%(self.crystal,self.energy),"roohist_fit_%s_%s"%(self.crystal,self.energy),RooArgList(self.x),self.hist)
+        self.m = RooRealVar("mean_%s_%s"%(self.crystal,self.energy),"mean_%s_%s"%(self.crystal,self.energy),self.peak_position,max(0.,self.peak_position*(1-self.xaxis_scale)),self.peak_position*(1+self.xaxis_scale))
+        self.s = RooRealVar("sigma_%s_%s"%(self.crystal,self.energy),"sigma_%s_%s"%(self.crystal,self.energy),self.s_initial,0.001,1.)
+        self.sig = RooGaussian("signal_%s_%s"%(self.crystal,self.energy),"signal_%s_%s"%(self.crystal,self.energy),self.x,self.m,self.s)        
+        
+
         
     def CB2intialization(self):
         round_energy = round(float(self.energy),-1)
@@ -94,8 +118,9 @@ class CBfunction:
         self.dict_fit_results = {}
         self.dict_fit_results['CBmean'] = [self.m.getVal(),self.m.getError()]
         self.dict_fit_results['CBsigma'] = [self.s.getVal(),self.s.getError()]
-        self.dict_fit_results['CBalpha'] = [self.a.getVal(),self.a.getError()]
-        self.dict_fit_results['CBexp'] = [self.n.getVal(),self.n.getError()]
+        if (self.gaussian==False) :
+            self.dict_fit_results['CBalpha'] = [self.a.getVal(),self.a.getError()]
+            self.dict_fit_results['CBexp'] = [self.n.getVal(),self.n.getError()]
         if (self.doubleSidedCB==True) :
             self.dict_fit_results['CBalpha2'] = [self.a2.getVal(),self.a2.getError()]
             self.dict_fit_results['CBexp2'] = [self.n2.getVal(),self.n2.getError()]
@@ -107,7 +132,8 @@ class CBfunction:
         self.frame = self.x.frame()
         self.roohist.plotOn(self.frame,RooFit.Name("roohist_chi2_%s_%s"%(self.crystal,self.energy)))
         self.sig.plotOn(self.frame,RooFit.Name("signal_chi2_%s_%s"%(self.crystal,self.energy)))
-        self.chi2 = self.frame.chiSquare("signal_chi2_%s_%s"%(self.crystal,self.energy),"roohist_chi2_%s_%s"%(self.crystal,self.energy),4) # 4 = nFitParameters from CB
+        ndf = 4
+        self.chi2 = self.frame.chiSquare("signal_chi2_%s_%s"%(self.crystal,self.energy),"roohist_chi2_%s_%s"%(self.crystal,self.energy),ndf) # 4 = nFitParameters from CB
         self.sig.paramOn(self.frame,RooFit.Layout(0.65,0.99,0.8))
         self.frame.getAttText().SetTextSize(0.02)
 
@@ -116,3 +142,11 @@ class CBfunction:
         txt_chi2.SetTextColor(ROOT.kRed)
         self.frame.addObject(txt_chi2)
         self.frame.Draw()
+
+    def plot_time(self):
+        self.frame = self.x.frame()
+        self.roohist.plotOn(self.frame,RooFit.Name("roohist_chi2_%s_%s"%(self.crystal,self.energy)))
+        self.frame.Draw()
+
+               
+        
